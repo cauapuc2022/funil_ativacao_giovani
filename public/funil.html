@@ -1,0 +1,1473 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Funil de Vendas Gustavo</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block"
+        rel="stylesheet" />
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#243B6B",
+                        "background-light": "#F5F7FB",
+                        "background-dark": "#0F172A",
+                        "card-light": "#FFFFFF",
+                        "card-dark": "#1E293B",
+                    },
+                    fontFamily: {
+                        display: ["Inter", "sans-serif"],
+                        sans: ["Inter", "sans-serif"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "8px",
+                    },
+                },
+            },
+        };
+    </script>
+    <style type="text/tailwindcss">
+        :root {
+            --bg-main: #F5F7FB;
+            --bg-sidebar: #243B6B;
+            --bg-column: #EBEEF5;
+            --bg-card: #FFFFFF;
+            --text-primary: #374151;
+            --text-secondary: #6B7280;
+            --accent: #2563eb;
+            --sidebar-active: rgba(255, 255, 255, 0.1);
+        }
+        body { 
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+        }
+        /* Sidebar ativa em desktop */
+        .sidebar-width {
+            width: 16rem;
+            transition: transform 0.3s;
+        }
+
+        /* Itens ativos */
+        .sidebar-item-active {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-left: 4px solid #3B82F6;
+        }
+
+        /* Ajustes para telas menores */
+        @media (max-width: 1024px) {
+            .sidebar-text { display: none; }
+            .sidebar-width { width: 4.5rem; }
+            .sidebar-logo { display: none; }
+            .sidebar-logo-icon { display: block !important; }
+            .sidebar-item { justify-content: center; padding-left: 0; padding-right: 0; }
+            .sidebar-item span:last-child { display: none; }
+            .sidebar-item span:first-child { margin-right: 0; }
+        }
+
+        /* Mobile: sidebar escondida inicialmente */
+        #sidebar {
+            transform: translateX(-100%);
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            z-index: 40;
+        }
+
+        #sidebar.open {
+            transform: translateX(0);
+        }
+
+        .kanban-container {
+            display: flex;
+            gap: 1.25rem;
+            height: 100%;
+            padding: 1.5rem;
+            width: 100%;
+        }
+        .kanban-column { 
+            flex: 0 0 320px;
+            display: flex;
+            flex-direction: column;
+        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+    </style>
+</head>
+
+<body class="h-screen flex overflow-hidden">
+    <aside id="sidebar"
+        class="sidebar-width w-64 bg-primary text-white flex-shrink-0 flex flex-col transition-all duration-300">
+        <div class="p-6 flex justify-center lg:justify-start">
+            <h1 class="sidebar-logo text-xl font-bold tracking-tight text-white/90">Ativação Tec</h1>
+            <span class="sidebar-logo-icon hidden material-symbols-outlined text-2xl">leaderboard</span>
+        </div>
+        <nav class="flex-1 mt-4">
+            <a class="sidebar-item flex items-center px-6 py-3.5 sidebar-item-active group" href="#">
+                <span class="material-symbols-outlined lg:mr-3 text-white">dashboard</span>
+                <span class="sidebar-text font-medium">Funil de Vendas Gustavo</span>
+            </a>
+            <a href="/" class="sidebar-item flex items-center px-6 py-3.5 hover:bg-white/5 transition-colors group"
+                href="#">
+                <span class="material-symbols-outlined lg:mr-3 text-slate-400 group-hover:text-white">group</span>
+                <span class="sidebar-text font-medium">CRM</span>
+            </a>
+        </nav>
+    </aside>
+    <main class="flex-1 flex flex-col min-w-0 bg-[var(--bg-main)] overflow-hidden">
+        <header
+            class="min-h-16 h-auto lg:h-16 bg-card-light dark:bg-card-dark border-b border-slate-200 dark:border-slate-800 flex flex-col lg:flex-row items-center justify-between px-4 lg:px-8 py-3 lg:py-0 z-10 flex-shrink-0 gap-4">
+
+            <div class="flex items-center justify-between w-full lg:w-full gap-4">
+                <div class="flex items-center gap-3">
+                    <h2 class="text-lg lg:text-xl font-bold text-slate-800 dark:text-white">Funil de vendas Gustavo</h2>
+                </div>
+                <button id="menu-toggle" class="p-1 text-slate-500">
+                    <span class="material-symbols-outlined">menu</span>
+                </button>
+            </div>
+            <div class="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
+                <button onclick="openCreateStepModal()"
+                    class="w-full sm:w-auto bg-primary hover:bg-opacity-90 text-white px-4 py-1.5 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition-all shadow-sm">
+                    <span class="material-symbols-outlined text-lg">add</span>
+                    <span class="whitespace-nowrap">Nova Etapa</span>
+                </button>
+            </div>
+        </header>
+        <div class="flex-1 overflow-x-auto overflow-y-hidden">
+            <div id="kanban-container" class="kanban-container h-full"></div>
+        </div>
+    </main>
+    <div id="createStepModal"
+        class="fixed hidden inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+        <div class="w-[95%] sm:w-full max-w-lg bg-white rounded-xl shadow-2xl overflow-hidden border border-slate-200">
+            <div class="px-5 py-5 sm:px-8 sm:py-6 border-b border-slate-100 flex items-center justify-between">
+                <div>
+                    <h2 id="stepModalTitle" class="text-2xl font-bold text-[#243B6B]">Nova Etapa</h2>
+                    <p id="stepModalMessage" class="text-sm text-[#6B7280] mt-1">Adicione uma nova fase ao seu processo
+                        de vendas.</p>
+                </div>
+                <button onclick="closeCreateStepModal()"
+                    class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <form id="createStepForm" class="px-5 py-6 sm:px-8 sm:py-8 space-y-6">
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-[#6B7280]" for="step-name">
+                        Nome da Etapa
+                    </label>
+                    <input name="name"
+                        class="w-full rounded-lg border-slate-200 bg-white focus:border-brand-blue focus:ring-brand-blue transition-shadow shadow-sm placeholder:text-slate-400 text-slate-700"
+                        id="step-name" placeholder="Ex: Negociação Final" type="text" />
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                    <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-[#6B7280]" for="responsible">
+                            Responsável
+                        </label>
+                        <input name="responsible"
+                            class="w-full rounded-lg border-slate-200 bg-white focus:border-brand-blue focus:ring-brand-blue transition-shadow shadow-sm placeholder:text-slate-400 text-slate-700"
+                            id="responsible" type="text" />
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-[#6B7280]" for="order">
+                            Ordem de Exibição
+                        </label>
+                        <input name="order"
+                            class="w-full rounded-lg border-slate-200 bg-white focus:border-brand-blue focus:ring-brand-blue transition-shadow shadow-sm placeholder:text-slate-400 text-slate-700"
+                            id="order" min="1" type="number" value="1" />
+                    </div>
+                </div>
+                <div class="flex gap-3 p-4 bg-slate-50 rounded-lg border border-slate-100">
+                    <span class="material-symbols-outlined text-brand-blue dark:text-primary text-xl">info</span>
+                    <p class="text-xs text-[#6B7280] leading-relaxed">
+                        A ordem de exibição define a posição da coluna no quadro Kanban, da esquerda para a direita.
+                    </p>
+                </div>
+            </form>
+            <div
+                class="px-5 py-4 sm:px-8 sm:py-6 bg-slate-50 border-t border-slate-100 flex flex-col-reverse sm:flex-row justify-end gap-3 sm:gap-4">
+                <button onclick="closeCreateStepModal()"
+                    class="px-6 py-2.5 rounded-lg border border-slate-200 text-[#6B7280] font-semibold hover:bg-white transition-all text-sm">
+                    Cancelar
+                </button>
+                <button id="saveStepBtn"
+                    class="px-8 py-2.5 rounded-lg bg-[#243B6B] hover:bg-[#1a2b4e] text-white font-semibold transition-all shadow-md shadow-brand-blue/20 text-sm flex items-center justify-center gap-2">
+                    Salvar Etapa
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="moveStepModal"
+        class="fixed hidden inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div
+            class="bg-white w-full max-w-lg rounded-xl shadow-2xl overflow-hidden flex flex-col border border-slate-200 max-h-[90vh]">
+            <header class="flex items-center justify-between border-b border-slate-200 px-6 py-4 bg-white">
+                <div class="flex items-center gap-3">
+                    <div class="bg-primary/10 p-2 rounded-lg">
+                        <span class="material-symbols-outlined text-primary text-2xl">move_item</span>
+                    </div>
+                    <h2 class="text-slate-900 text-xl font-bold leading-tight tracking-tight">Trocar Etapa</h2>
+                    <p id="nameCustomerMoveModal" class="text-slate-500 text-sm font-medium leading-none mt-1"></p>
+                </div>
+                <button onclick="closeMoveStepModal()"
+                    class="flex items-center justify-center rounded-full h-10 w-10 hover:bg-slate-100 text-slate-500 transition-colors">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </header>
+            <div class="p-6 overflow-y-auto flex-1">
+                <div class="mb-6">
+                    <p class="text-slate-700 text-sm font-semibold uppercase tracking-wider">Mover cliente para:</p>
+                    <p class="text-slate-500 text-xs mt-1">Selecione para qual etapa deseja mover este cliente:</p>
+                </div>
+                <div id="stepsList" class="grid gap-3"></div>
+            </div>
+            <footer class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-3">
+                <button onclick="closeMoveStepModal()"
+                    class="px-5 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-200 rounded-lg transition-colors">
+                    Cancelar
+                </button>
+            </footer>
+        </div>
+    </div>
+
+    <div id="addCustomerModal"
+        class="fixed hidden inset-0 z-50 flex items-center justify-center bg-brand-blue/20 backdrop-blur-sm p-4">
+        <div
+            class="bg-white dark:bg-slate-900 w-full max-w-xl rounded-xl shadow-2xl overflow-hidden flex flex-col border border-slate-200 dark:border-slate-800">
+            <div class="px-6 py-6 border-b border-slate-100 dark:border-slate-800">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h2 class="text-2xl font-bold text-brand-blue dark:text-slate-100">Adicionar Cliente à Etapa
+                        </h2>
+                        <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Selecione um cliente cadastrado para
+                            incluir nesta coluna.</p>
+                    </div>
+                    <button onclick="closeAddCustomerModal()"
+                        class="text-slate-400 hover:text-slate-600 transition-colors">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+            </div>
+            <div class="px-6 pt-2 pb-4 border-b border-slate-100 dark:border-slate-800">
+                <div class="relative flex items-center">
+                    <input id="customer-search"
+                        class="w-full pl-4 pr-24 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue outline-none transition-all dark:text-slate-100"
+                        placeholder="Buscar por nome..." type="text" />
+                    <button id="confirm-customer-search"
+                        class="absolute right-2 px-4 py-1.5 bg-[#243B6B] text-white rounded-lg text-sm font-medium hover:bg-brand-blue/90 transition-colors shadow-sm">
+                        Buscar
+                    </button>
+                </div>
+            </div>
+            <div class="flex-1 overflow-y-auto max-h-[450px] px-6 py-6">
+                <div class="space-y-2"></div>
+            </div>
+            <div
+                class="px-6 py-5 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 flex justify-end items-center gap-3">
+                <button onclick="closeAddCustomerModal()"
+                    class="px-5 py-2.5 rounded-xl text-slate-600 dark:text-slate-300 font-medium hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors text-sm">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="deleteCustomerFunnelModal" class="fixed hidden inset-0 z-[100] items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"></div>
+        <div
+            class="relative bg-white dark:bg-card-dark w-full max-w-md rounded-xl shadow-2xl overflow-hidden transform transition-all border border-slate-100 dark:border-slate-800">
+            <div class="p-6">
+                <div class="flex flex-col items-center text-center">
+                    <div
+                        class="w-16 h-16 bg-red-50 dark:bg-red-900/20 rounded-full flex items-center justify-center mb-4">
+                        <span class="material-symbols-outlined text-red-500 text-4xl">warning</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Confirmar Exclusão</h3>
+                    <p id="modalDeleteMessage" class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                        Tem certeza que deseja excluir este cliente desta etapa? Esta ação não poderá ser desfeita e
+                        removerá todos
+                        os dados associados.
+                    </p>
+                </div>
+            </div>
+            <div class="bg-slate-50 dark:bg-slate-800/50 px-6 py-4 flex items-center justify-center gap-3">
+                <button onclick="closeDeleteCustomerFunnelModal()"
+                    class="flex-1 px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                    Cancelar
+                </button>
+                <button onclick="confirmDeleteCustomerFunnel()"
+                    class="flex-1 px-4 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition-colors shadow-sm shadow-red-200 dark:shadow-none">
+                    Sim, Excluir
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="deleteStepModal" class="fixed hidden inset-0 z-[100] items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"></div>
+        <div
+            class="relative bg-white dark:bg-card-dark w-full max-w-md rounded-xl shadow-2xl overflow-hidden transform transition-all border border-slate-100 dark:border-slate-800">
+            <div class="p-6">
+                <div class="flex flex-col items-center text-center">
+                    <div
+                        class="w-16 h-16 bg-red-50 dark:bg-red-900/20 rounded-full flex items-center justify-center mb-4">
+                        <span class="material-symbols-outlined text-red-500 text-4xl">warning</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Confirmar Exclusão</h3>
+                    <p id="modalDeleteMessage" class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                        Tem certeza que deseja excluir esta etapa? Esta ação não poderá ser desfeita e removerá todos
+                        os dados associados.
+                    </p>
+                </div>
+            </div>
+            <div class="bg-slate-50 dark:bg-slate-800/50 px-6 py-4 flex items-center justify-center gap-3">
+                <button onclick="closeDeleteStepModal()"
+                    class="flex-1 px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                    Cancelar
+                </button>
+                <button onclick="confirmDeleteStep()"
+                    class="flex-1 px-4 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition-colors shadow-sm shadow-red-200 dark:shadow-none">
+                    Sim, Excluir
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="viewCustomer"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm hidden">
+        <div
+            class="relative w-full max-w-2xl bg-white dark:bg-slate-800 rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-700">
+                <div class="flex items-center gap-3">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100">Visualizar Cliente</h2>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Informações detalhadas do registro no CRM
+                        </p>
+                    </div>
+                </div>
+                <button onclick="closeViewCustomerModal()"
+                    class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                    <div class="flex flex-col gap-1">
+                        <span
+                            class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Nome</span>
+                        <p class="text-sm font-medium text-slate-800 dark:text-slate-200" data-field="name"></p>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <span
+                            class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Marca</span>
+                        <p class="text-sm font-medium text-slate-800 dark:text-slate-200" data-field="brand"></p>
+                    </div>
+                    <div class="col-span-full flex flex-col gap-1">
+                        <span
+                            class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Endereço
+                            Completo</span>
+                        <p class="text-sm font-medium text-slate-800 dark:text-slate-200" data-field="address"></p>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <span
+                            class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Telefone</span>
+                        <p class="text-sm font-medium text-slate-800" data-field="phone"></p>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <span
+                            class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Email</span>
+                        <p class="text-sm font-medium text-slate-800" data-field="email"></p>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <span
+                            class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Vendedor
+                            Responsável</span>
+                        <div class="flex items-center gap-2">
+                            <div
+                                class="size-6 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
+                                <span
+                                    class="material-symbols-outlined text-xs text-slate-600 dark:text-slate-300">person</span>
+                            </div>
+                            <p class="text-sm font-medium text-slate-800 dark:text-slate-200" data-field="seller"></p>
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <span
+                            class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Vendedor
+                            Responsável</span>
+                        <div class="flex items-center gap-2">
+                            <div
+                                class="size-6 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
+                                <span
+                                    class="material-symbols-outlined text-xs text-slate-600 dark:text-slate-300">person</span>
+                            </div>
+                            <p class="text-sm font-medium text-slate-800 dark:text-slate-200" data-field="buyer"></p>
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <span
+                            class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Tipo
+                            de Conta</span>
+                        <div class="flex">
+                            <span
+                                class="px-2 py-0.5 rounded text-[11px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
+                                data-field="salesType"></span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <span
+                            class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Modelo
+                            de Compra</span>
+                        <p class="text-sm font-medium text-slate-800 dark:text-slate-200" data-field="purchaseModel">
+                        </p>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <span
+                            class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Ticket
+                            Médio</span>
+                        <p class="text-sm font-bold text-slate-900 dark:text-slate-100" data-field="monthlyTicket"></p>
+                    </div>
+                    <div class="col-span-full pt-4 border-t border-slate-100 dark:border-slate-700 mt-2">
+                        <span
+                            class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Observações</span>
+                        <div
+                            class="mt-2 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-100 dark:border-slate-700">
+                            <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed italic"
+                                data-field="notes"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div
+                class="px-6 py-4 bg-slate-50 dark:bg-slate-900/30 border-t border-slate-100 dark:border-slate-700 flex justify-end gap-3">
+                <button onclick="closeViewCustomerModal()"
+                    class="px-6 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-semibold text-[#243B6B] dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all shadow-sm">
+                    Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+    const menuToggle = document.getElementById("menu-toggle");
+    const sidebar = document.getElementById("sidebar");
+
+    menuToggle.addEventListener('click', () => {
+        sidebar.classList.toggle('open');
+    });
+
+    let draggedCard = null;
+    let sourceColumn = null;
+    let currentCustomerId = null;
+    let editingStepId = null;
+
+    function getDragAfterElement(container, y) {
+        const elements = [...container.querySelectorAll(".kanban-card:not(.dragging)")]
+
+        let closest = null;
+        let closestOffset = Number.NEGATIVE_INFINITY
+
+        elements.forEach(child => {
+            const box = child.getBoundingClientRect()
+            const offset = y - box.top - box.height / 2
+
+            if (offset < 0 && offset > closestOffset) {
+                closestOffset = offset;
+                closest = child;
+            }
+        });
+
+        return closest
+    }
+
+    function openCreateStepModal() {
+        editingStepId = null;
+
+        document.getElementById("stepModalTitle").textContent = "Nova Etapa";
+        document.getElementById("stepModalMessage").textContent = "Adicione uma nova fase ao seu processo de vendas.";
+        document.getElementById("saveStepBtn").textContent = "Salvar Etapa";
+
+        document.getElementById("createStepModal").classList.remove("hidden");
+    }
+
+    function closeCreateStepModal() {
+        document.getElementById("createStepModal").classList.add("hidden");
+        document.getElementById("createStepForm").reset();
+    }
+
+    async function openMoveStepModal(customerId, customerName) {
+        currentCustomerId = customerId;
+
+        document.getElementById("moveStepModal").classList.remove("hidden");
+
+        await loadModalMoveSteps(customerName);
+    }
+
+    function closeMoveStepModal() {
+        document.getElementById("moveStepModal").classList.add("hidden");
+    }
+
+    function openAddCustomerModal(stepId) {
+        const modal = document.getElementById("addCustomerModal");
+        modal.classList.remove("hidden");
+
+        loadAvailableCustomers(stepId);
+    }
+
+    function closeAddCustomerModal() {
+        const modal = document.getElementById("addCustomerModal");
+        document.getElementById("customer-search").value = "";
+        modal.classList.add("hidden");
+    }
+
+    let deletingCustomerId = null;
+    let deletingStepId = null;
+    let deletingCard = null;
+    let deletingAllStepId = null;
+    let deletingStep = null;
+
+    function openDeleteCustomerFunnelModal(customerId, stepId, card) {
+        deletingCustomerId = customerId;
+        deletingStepId = stepId
+        deletingCard = card
+
+        const modal = document.getElementById("deleteCustomerFunnelModal");
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+    }
+
+    function openDeleteStepModal(stepId, step) {
+        deletingAllStepId = stepId
+        deletingStep = step
+
+        const modal = document.getElementById("deleteStepModal");
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+    }
+
+    function closeDeleteCustomerFunnelModal() {
+        const modal = document.getElementById("deleteCustomerFunnelModal");
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+
+        deletingCustomerId = null;
+        deletingStepId = null;
+        deletingCard = null;
+    }
+
+    function closeDeleteStepModal() {
+        const modal = document.getElementById("deleteStepModal");
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+
+        deletingAllStepId = null;
+        deletingStep = null;
+    }
+
+    document.getElementById("saveStepBtn").addEventListener("click", function () {
+        document.getElementById("createStepForm").requestSubmit();
+    });
+
+    document.getElementById("createStepForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+        const data = Object.fromEntries(formData);
+
+        if (editingStepId) {
+            updateStep(editingStepId, data);
+        } else {
+            createStep(data);
+        }
+    });
+
+
+
+    function prepareStepData(data) {
+        return {
+            ...data,
+            order: data.order ? parseInt(data.order, 10) : 0
+        };
+    }
+
+    async function createStep(data) {
+        try {
+            const formattedData = prepareStepData(data);
+            const response = await fetch("/steps", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(formattedData),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error("Erro ao criar etapa:", errorData);
+                alert("Erro ao criar etapa: " + (errorData.error || "Verifique o console"));
+                return;
+            }
+
+            loadSteps();
+            closeCreateStepModal();
+        } catch (err) {
+            console.error("Erro na requisição:", err);
+            alert("Erro ao criar cliente, veja o console para detalhes");
+        }
+    }
+
+    async function updateStep(stepId, data) {
+        try {
+            const formattedData = prepareStepData(data);
+            const response = await fetch(`/steps/${stepId}`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(formattedData),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error("Erro ao editar etapa:", errorData);
+                alert("Erro ao editar etapa: " + (errorData.error || "Verifique o console"));
+                return;
+            }
+
+            closeCreateStepModal();
+            loadSteps();
+        } catch (err) {
+            console.error("Erro na requisição:", err);
+            alert("Erro ao editar cliente, veja o console para detalhes");
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", loadSteps);
+
+    async function loadModalMoveSteps(customerName) {
+        const container = document.getElementById("stepsList");
+        document.getElementById("nameCustomerMoveModal").textContent = customerName;
+
+        if (!container) return;
+
+        container.innerHTML = `
+            <div class="text-slate-500 text-sm py-4 text-center">
+            Carregando etapas...
+            </div>
+        `;
+
+        try {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 8000);
+
+            const response = await fetch("/steps", {
+                method: "GET",
+                headers: {
+                    "Accept": "application/json"
+                },
+                signal: controller.signal
+            });
+
+            clearTimeout(timeout);
+
+            if (!response.ok) {
+                throw new Error(`Erro HTTP: ${response.status}`);
+            }
+
+            const steps = await response.json();
+
+            if (!Array.isArray(steps)) {
+                throw new Error("Resposta inválida da API");
+            }
+
+            container.innerHTML = "";
+
+            const sortedSteps = steps
+                .filter(step => step && step._id && step.name)
+                .sort((a, b) => (a.order || 0) - (b.order || 0));
+
+            if (sortedSteps.length === 0) {
+                container.innerHTML = `
+        <div class="text-slate-500 text-sm py-4 text-center">
+          Nenhuma etapa encontrada
+        </div>
+      `;
+                return;
+            }
+
+            sortedSteps.forEach(step => {
+                const button = document.createElement("button");
+
+                button.className =
+                    "group flex items-center gap-4 bg-white border border-slate-200 rounded-xl hover:border-primary hover:ring-1 hover:ring-primary/30 transition-all text-left w-full shadow-sm px-6 py-4";
+
+                const content = document.createElement("div");
+                content.className = "flex-1";
+
+                const name = document.createElement("p");
+                name.className = "text-slate-900 text-base font-semibold";
+                name.textContent = step.name;
+
+                const responsible = document.createElement("p");
+                responsible.className = "text-slate-500 text-sm mt-0.5";
+                responsible.textContent = `(Responsável: ${step.responsible || "Não definido"})`;
+
+                const icon = document.createElement("span");
+                icon.className =
+                    "material-symbols-outlined text-slate-300 group-hover:text-primary transition-colors";
+                icon.textContent = "chevron_right";
+
+                content.appendChild(name);
+                content.appendChild(responsible);
+
+                button.appendChild(content);
+                button.appendChild(icon);
+
+                button.addEventListener("click", () => {
+                    updateCustomerStep(currentCustomerId, step._id);
+                });
+
+                container.appendChild(button);
+            });
+
+        } catch (error) {
+            console.error("Erro ao carregar etapas:", error);
+
+            container.innerHTML = `
+      <div class="text-red-500 text-sm py-4 text-center">
+        Erro ao carregar etapas
+      </div>
+    `;
+        }
+    }
+
+    async function loadSteps() {
+        try {
+            const response = await fetch("/steps/customers");
+            const steps = await response.json();
+
+            const container = document.getElementById("kanban-container");
+            container.innerHTML = "";
+
+            steps.sort((a, b) => a.order - b.order);
+
+            steps.forEach(step => {
+
+                // COLUMN
+                const column = document.createElement("div");
+                column.className = "kanban-column bg-[var(--bg-column)] rounded-xl border border-gray-200";
+                column.dataset.stepId = step._id;
+
+                // HEADER
+                const header = document.createElement("div");
+                header.className = "p-4 border-b border-gray-200";
+
+                const headerFlex = document.createElement("div");
+                headerFlex.className = "flex justify-between items-start";
+
+                const headerInfo = document.createElement("div");
+
+                const title = document.createElement("h3");
+                title.className = "font-bold text-gray-700 uppercase tracking-wider text-[11px]";
+                title.textContent = step.name;
+
+                const responsible = document.createElement("p");
+                responsible.className = "text-[12px] text-gray-500";
+                responsible.textContent = `Responsável: ${step.responsible}`;
+
+                headerInfo.appendChild(title);
+                headerInfo.appendChild(responsible);
+
+                const badge = document.createElement("span");
+                badge.className = "text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded font-bold uppercase";
+
+                headerFlex.appendChild(headerInfo);
+                headerFlex.appendChild(badge);
+                header.appendChild(headerFlex);
+
+                // SEARCH
+                const containerSearch = document.createElement("div");
+                containerSearch.className = "px-3 py-2 border-b border-gray-200 bg-gray-50/50";
+
+                const relativeSearch = document.createElement("div");
+                relativeSearch.className = "relative";
+
+                const icon = document.createElement("span");
+                icon.className = "material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-[16px]";
+                icon.textContent = "search";
+
+                const input = document.createElement("input");
+                input.type = "text";
+                input.placeholder = "Buscar clientes...";
+                input.className = "w-full pl-8 pr-16 py-1.5 text-[11px] bg-white border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500";
+
+                const buttonSearch = document.createElement("button");
+                buttonSearch.className = "absolute right-1 top-1/2 -translate-y-1/2 bg-[#243B6B] text-white px-2 py-1 rounded text-[10px] font-medium hover:bg-[#1a2b4e] transition-colors";
+                buttonSearch.textContent = "Buscar";
+                buttonSearch.onclick = () => {
+                    filterCards(column, input.value);
+                };
+
+                relativeSearch.appendChild(icon);
+                relativeSearch.appendChild(input);
+                relativeSearch.appendChild(buttonSearch);
+                containerSearch.appendChild(relativeSearch);
+
+                // CARD CONTAINER
+                const cardsContainer = document.createElement("div");
+                cardsContainer.className = "kanban-cards flex-1 overflow-y-auto p-3 space-y-3";
+
+                // CARDS
+                step.customers.forEach(customer => {
+                    const card = document.createElement("div");
+                    card.className = "kanban-card bg-[var(--bg-card)] p-4 rounded-xl shadow-sm border border-gray-200 group hover:border-blue-400 transition-all cursor-grab active:cursor-grabbing";
+                    card.draggable = true;
+                    card.dataset.customerId = customer._id;
+                    card.dataset.name = customer.name;
+                    card.dataset.city = customer.address.city;
+                    card.dataset.seller = customer.seller;
+
+                    const titleWrap = document.createElement("div");
+                    titleWrap.className = "flex justify-between items-start mb-3";
+
+                    const company = document.createElement("h4");
+                    company.className = "font-bold text-gray-800 text-sm leading-tight";
+                    company.textContent = customer.name;
+
+                    const buttonContainer = document.createElement("div");
+                    buttonContainer.className = "flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity";
+
+                    const viewCustomerButton = document.createElement("button");
+                    viewCustomerButton.className = "text-gray-400 hover:text-blue-700 transition-colors";
+                    viewCustomerButton.title = "Visualizar Cliente";
+                    viewCustomerButton.onclick = () => openViewCustomerModal(customer._id);
+
+                    const iconSpanViewCustomer = document.createElement("span");
+                    iconSpanViewCustomer.className = "material-symbols-outlined text-[20px]";
+                    iconSpanViewCustomer.textContent = "info";
+
+                    viewCustomerButton.appendChild(iconSpanViewCustomer);
+                    buttonContainer.appendChild(viewCustomerButton);
+
+                    const deleteButton = document.createElement("button");
+                    deleteButton.className = "text-gray-400 hover:text-red-500 transition-colors";
+                    deleteButton.title = "Excluir Cliente";
+                    deleteButton.onclick = () => openDeleteCustomerFunnelModal(customer._id, step._id, card);
+
+                    const iconSpan = document.createElement("span");
+                    iconSpan.className = "material-symbols-outlined text-[18px]";
+                    iconSpan.textContent = "delete";
+
+                    deleteButton.appendChild(iconSpan);
+                    buttonContainer.appendChild(deleteButton);
+
+                    titleWrap.appendChild(company);
+                    titleWrap.appendChild(buttonContainer);
+
+                    const grid = document.createElement("div");
+                    grid.className = "grid grid-cols-1 gap-2 text-[11px]";
+
+                    function createInfo(icon, text) {
+                        const row = document.createElement("div");
+                        row.className = "flex items-center gap-2 text-gray-600";
+
+                        const iconSpan = document.createElement("span");
+                        iconSpan.className = "material-symbols-outlined text-[14px] text-gray-400";
+                        iconSpan.textContent = icon;
+
+                        const textSpan = document.createElement("span");
+                        textSpan.textContent = text;
+
+                        row.appendChild(iconSpan);
+                        row.appendChild(textSpan);
+
+                        return row;
+                    }
+
+                    grid.appendChild(createInfo("location_on", `${customer.address.city}, ${customer.address.state}`));
+                    grid.appendChild(createInfo("sell", customer.brand));
+                    grid.appendChild(createInfo("call", `${customer.phone}`));
+                    grid.appendChild(createInfo("contact_page", `Comprador: ${customer.buyer || ""}`));
+                    grid.appendChild(createInfo("person", `Vendedor: ${customer.seller}`));
+
+                    const footer = document.createElement("div");
+                    footer.className = "mt-4 pt-3 border-t border-green-100 flex justify-between items-center";
+
+                    const datesContainer = document.createElement("div");
+                    datesContainer.className = "flex flex-col gap-1";
+
+                    // -------- Entrada no funil --------
+                    const entryRow = document.createElement("div");
+                    entryRow.className = "flex items-center gap-1.5 text-[10px] text-gray-500 font-medium";
+
+                    const entryIcon = document.createElement("span");
+                    entryIcon.className = "material-symbols-outlined text-[14px] text-gray-400";
+                    entryIcon.textContent = "login";
+                    entryIcon.title = "Entrada do cliente ao funil";
+
+                    if (customer.funnel_entry_at) {
+                        const entryDate = new Date(customer.funnel_entry_at);
+
+                        const entryFormatted =
+                            entryDate.toLocaleDateString("pt-BR", {
+                                day: "2-digit",
+                                month: "short"
+                            }).toUpperCase() +
+                            ", " +
+                            entryDate.toLocaleTimeString("pt-BR", {
+                                hour: "2-digit",
+                                minute: "2-digit"
+                            });
+
+                        const entrySpan = document.createElement("span");
+                        entrySpan.textContent = `Entrada: ${entryFormatted}`;
+
+                        entryRow.appendChild(entryIcon);
+                        entryRow.appendChild(entrySpan);
+                        datesContainer.appendChild(entryRow);
+                    }
+
+                    // -------- Atualização do funil --------
+                    const updateRow = document.createElement("div");
+                    updateRow.className = "flex items-center gap-1.5 text-[10px] text-gray-500 font-medium";
+
+                    const updateIcon = document.createElement("span");
+                    updateIcon.className = "material-symbols-outlined text-[12px] text-gray-400";
+                    updateIcon.textContent = "calendar_today";
+
+                    const updateDate = new Date(customer.funnel_updatedAt);
+
+                    const updateFormatted =
+                        updateDate.toLocaleDateString("pt-BR", {
+                            day: "2-digit",
+                            month: "short"
+                        }).toUpperCase() +
+                        ", " +
+                        updateDate.toLocaleTimeString("pt-BR", {
+                            hour: "2-digit",
+                            minute: "2-digit"
+                        });
+
+                    const updateSpan = document.createElement("span");
+                    updateSpan.textContent = `Atualização: ${updateFormatted}`;
+
+                    updateRow.appendChild(updateIcon);
+                    updateRow.appendChild(updateSpan);
+
+                    datesContainer.appendChild(updateRow);
+
+                    const btnWrap = document.createElement("div");
+                    const moveBtn = document.createElement("button");
+                    moveBtn.className = "flex items-center justify-center text-gray-400 hover:text-blue-600 transition-colors mr-1.5";
+                    moveBtn.title = "Mover Etapa";
+                    moveBtn.onclick = () => openMoveStepModal(customer._id, customer.name);
+
+                    const moveIcon = document.createElement("span");
+                    moveIcon.className = "material-symbols-outlined text-[18px]";
+                    moveIcon.textContent = "swap_horiz";
+
+                    moveBtn.appendChild(moveIcon);
+                    btnWrap.appendChild(moveBtn);
+
+                    footer.appendChild(datesContainer);
+                    footer.appendChild(btnWrap);
+
+                    card.appendChild(titleWrap);
+                    card.appendChild(grid);
+                    card.appendChild(footer);
+
+                    cardsContainer.appendChild(card);
+                });
+
+                // FOOTER
+                const footerColumn = document.createElement("div");
+                footerColumn.className = "p-3 mb-6 lg:mb-0 flex items-center gap-2";
+
+                const addBtn = document.createElement("button");
+                addBtn.className =
+                    "flex-1 flex items-center justify-center gap-2 py-2 bg-gray-200/50 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-gray-200 transition-all text-xs font-semibold";
+                addBtn.onclick = () => openAddCustomerModal(step._id);
+
+                const addIcon = document.createElement("span");
+                addIcon.className = "material-symbols-outlined text-[16px]";
+                addIcon.textContent = "add";
+
+                const addText = document.createElement("span");
+                addText.textContent = "Adicionar Cliente";
+
+                addBtn.appendChild(addIcon);
+                addBtn.appendChild(addText);
+
+                const actionsContainer = document.createElement("div");
+                actionsContainer.className = "flex items-center gap-1";
+
+                const editBtn = document.createElement("button");
+                editBtn.className =
+                    "text-gray-400 hover:text-blue-600 transition-colors flex items-center justify-center p-1.5 bg-gray-200/30 rounded-lg";
+                editBtn.title = "Editar Etapa";
+                editBtn.onclick = () => openStepEditModal(step._id, step);
+
+                const editIcon = document.createElement("span");
+                editIcon.className = "material-symbols-outlined text-[16px]";
+                editIcon.textContent = "edit";
+
+                editBtn.appendChild(editIcon);
+
+                const deleteBtn = document.createElement("button");
+                deleteBtn.className =
+                    "text-gray-400 hover:text-red-500 transition-colors flex items-center justify-center p-1.5 bg-gray-200/30 rounded-lg";
+                deleteBtn.title = "Excluir Etapa";
+                deleteBtn.onclick = () => openDeleteStepModal(step._id, column);
+
+                const deleteIcon = document.createElement("span");
+                deleteIcon.className = "material-symbols-outlined text-[16px]";
+                deleteIcon.textContent = "delete";
+
+                deleteBtn.appendChild(deleteIcon);
+
+                actionsContainer.appendChild(editBtn);
+                actionsContainer.appendChild(deleteBtn);
+
+                footerColumn.appendChild(addBtn);
+                footerColumn.appendChild(actionsContainer);
+
+                column.appendChild(header);
+                column.appendChild(containerSearch);
+                column.appendChild(cardsContainer);
+                column.appendChild(footerColumn);
+
+                container.appendChild(column);
+            });
+
+            updateCardCounts();
+
+            document.querySelectorAll(".kanban-card").forEach(card => {
+                card.addEventListener("dragstart", () => {
+                    draggedCard = card;
+                    sourceColumn = card.closest(".kanban-cards");
+                    card.classList.add("dragging");
+                });
+
+                card.addEventListener("dragend", () => {
+                    card.classList.remove("dragging");
+
+                    const targetColumn = card.closest(".kanban-cards");
+
+                    if (!targetColumn || sourceColumn === targetColumn) {
+                        draggedCard = null;
+                        return;
+                    }
+
+                    const customerId = card.dataset.customerId;
+                    const stepId = targetColumn.closest(".kanban-column").dataset.stepId;
+
+                    updateCustomerStep(customerId, stepId);
+                    updateCardCounts();
+
+                    draggedCard = null;
+                });
+            });
+
+            document.querySelectorAll(".kanban-cards").forEach(column => {
+                column.addEventListener("dragover", e => {
+                    e.preventDefault()
+
+                    const afterElement = getDragAfterElement(column, e.clientY)
+
+                    if (afterElement == null) {
+                        column.appendChild(draggedCard)
+                    } else {
+                        column.insertBefore(draggedCard, afterElement)
+                    }
+                });
+            });
+
+        } catch (error) {
+            console.error("Erro ao carregar steps:", error);
+        }
+    }
+
+    function updateCardCounts() {
+        document.querySelectorAll(".kanban-column").forEach(column => {
+            const cards = column.querySelectorAll(".kanban-card").length;
+            const badge = column.querySelector("span");
+
+            if (!badge) return;
+
+            badge.textContent = `${cards} Cliente${cards !== 1 ? "s" : ""}`;
+
+            if (cards === 0) {
+                badge.classList.remove("bg-blue-100", "text-blue-700");
+                badge.classList.add("bg-gray-200", "text-gray-600");
+            } else {
+                badge.classList.remove("bg-gray-200", "text-gray-600");
+                badge.classList.add("bg-blue-100", "text-blue-700");
+            }
+        });
+    }
+
+    async function updateCustomerStep(customerId, stepId) {
+        try {
+            const response = await fetch(`/customers/${customerId}/step`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    stepId: stepId
+                })
+            });
+
+            if (!response.ok) throw new Error("Erro ao atualizar etapa");
+
+        } catch (error) {
+            alert("Erro ao atualizar etapa");
+            console.error("Erro na requisição:", error);
+        }
+
+        closeMoveStepModal();
+        loadSteps();
+    }
+
+    async function loadAvailableCustomers(stepId) {
+        const container = document.querySelector("#addCustomerModal .space-y-2");
+        if (!container) return;
+
+        container.innerHTML = `
+            <div class="text-slate-500 dark:text-slate-400 text-sm py-4 text-center">
+            Carregando clientes disponíveis...
+            </div>
+        `;
+
+        try {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 8000);
+
+            const response = await fetch("/steps/available-customers", {
+                method: "GET",
+                headers: { "Accept": "application/json" },
+                signal: controller.signal
+            });
+
+            clearTimeout(timeout);
+
+            if (!response.ok) {
+                throw new Error(`Erro HTTP: ${response.status}`);
+            }
+
+            const customers = await response.json();
+
+            if (!Array.isArray(customers)) {
+                throw new Error("Resposta inválida da API");
+            }
+
+            container.innerHTML = "";
+
+            if (customers.length === 0) {
+                container.innerHTML = `
+                    <div class="text-slate-500 dark:text-slate-400 text-sm py-4 text-center">
+                    Nenhum cliente disponível
+                    </div>
+                `;
+                return;
+            }
+
+            customers.forEach(customer => {
+                if (!customer || !customer._id || !customer.name) return;
+
+                const card = document.createElement("div");
+                card.dataset.customerName = customer.name;
+                card.className = `
+                    flex items-center justify-between p-4 rounded-xl
+                    hover:bg-slate-50 dark:hover:bg-slate-800
+                    border border-slate-200 dark:border-slate-700
+                    hover:border-brand-blue/30 shadow-sm transition-all
+                    group cursor-pointer
+                `;
+
+                const info = document.createElement("div");
+                info.className = "flex items-center gap-4";
+
+                const text = document.createElement("div");
+
+                const name = document.createElement("p");
+                name.className = "font-semibold text-slate-800 dark:text-slate-100";
+                name.textContent = customer.name;
+
+                const details = document.createElement("p");
+                details.className = "text-xs text-slate-500 dark:text-slate-400";
+                details.textContent = `Marca: ${customer.brand || "-"} | ${customer.address?.city || "-"}, ${customer.address?.state || "-"}`;
+
+                text.appendChild(name);
+                text.appendChild(details);
+
+                info.appendChild(text);
+                card.appendChild(info);
+
+                card.addEventListener("click", () => {
+                    addCustomerToStep(stepId, customer._id);
+                });
+
+                container.appendChild(card);
+            });
+
+        } catch (error) {
+            console.error("Erro ao carregar clientes disponíveis:", error);
+            container.innerHTML = `
+      <div class="text-red-500 dark:text-red-400 text-sm py-4 text-center">
+        Erro ao carregar clientes disponíveis
+      </div>
+    `;
+        }
+    }
+
+    async function addCustomerToStep(stepId, customerId) {
+        try {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 8000);
+
+            const response = await fetch("/funnels", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    "customerId": customerId,
+                    "stepId": stepId
+                }),
+            });
+
+            clearTimeout(timeout);
+
+            if (!response.ok) {
+                throw new Error(`Erro HTTP: ${response.status}`);
+            }
+        } catch (error) {
+            alert("Erro ao carregar clientes disponíveis: " + error);
+            console.error("Erro ao carregar clientes disponíveis:", error);
+        }
+
+        loadSteps();
+        closeAddCustomerModal();
+    }
+
+
+    async function openStepEditModal(stepId, step) {
+        editingStepId = stepId;
+        editingStepElement = step;
+
+        document.getElementById("stepModalTitle").textContent = "Editar Cliente";
+        document.getElementById("stepModalMessage").textContent = "";
+        document.getElementById("saveStepBtn").textContent = "Salvar Alterações";
+
+        try {
+
+            const response = await fetch(`/steps/${stepId}`);
+
+            if (!response.ok) {
+                throw new Error("Erro ao buscar etapa");
+            }
+
+            const step = await response.json();
+
+            document.querySelector('[name="name"]').value = step.name || "";
+            document.querySelector('[name="responsible"]').value = step.responsible || "";
+            document.querySelector('[name="order"]').value = step.order || "";
+
+            document.getElementById("createStepModal").classList.remove("hidden");
+
+        } catch (error) {
+            console.error(error);
+            alert("Erro ao carregar os dados do cliente");
+
+        }
+    }
+
+    async function confirmDeleteCustomerFunnel() {
+        if (!deletingCustomerId && !deletingStepId && !deletingCard) return;
+
+        try {
+            deleteFunnel(deletingCustomerId, deletingStepId, deletingCard);
+            closeDeleteCustomerFunnelModal();
+        } catch (error) {
+
+            console.error(error);
+            alert("Erro ao excluir cliente");
+
+        }
+    }
+
+    async function confirmDeleteStep() {
+        if (!deletingAllStepId && !deletingStep) return;
+
+        try {
+            deleteStep(deletingAllStepId, deletingStep);
+            closeDeleteStepModal();
+        } catch (error) {
+
+            console.error(error);
+            alert("Erro ao excluir cliente");
+
+        }
+    }
+
+    async function deleteFunnel(customerId, stepId, cardElement) {
+        try {
+            const res = await fetch("/funnels", {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ customerId, stepId })
+            });
+
+            const data = await res.json();
+
+            if (data.ok) {
+                if (cardElement) cardElement.remove();
+                updateCardCounts();
+            } else {
+                console.error("Erro ao deletar:", data.error);
+            }
+        } catch (err) {
+            console.error("Erro na requisição:", err);
+        }
+    }
+
+    async function deleteStep(stepId, cardElement) {
+        try {
+            const res = await fetch(`/steps/${stepId}`, {
+                method: "DELETE",
+            });
+
+            const data = await res.json();
+
+            if (data.ok) {
+                if (cardElement) cardElement.remove();
+            } else {
+                console.error("Erro ao deletar etapa:", data.error);
+            }
+        } catch (err) {
+            alert("Erro ao deletar etapa: ", err)
+            console.error("Erro na requisição: ", err);
+        }
+    }
+
+    async function openViewCustomerModal(customerId) {
+        const modal = document.getElementById("viewCustomer");
+
+        try {
+            const response = await fetch(`/customers/${customerId}`);
+            if (!response.ok) throw new Error("Erro ao buscar cliente");
+
+            const customer = await response.json();
+
+            modal.querySelector("p[data-field='name']").textContent = escapeHTML(customer.name || "");
+            modal.querySelector("p[data-field='brand']").textContent = escapeHTML(customer.brand || "");
+
+            const address = customer.address || {};
+            const fullAddress = address.city ? `${escapeHTML(address.street)}, ${escapeHTML(address.streetNumber)} - ${escapeHTML(address.neighborhood)}, ${escapeHTML(address.city)} - ${escapeHTML(address.state)}, ${escapeHTML(address.postalCode)}` : "-";
+            modal.querySelector("p[data-field='address']").textContent = fullAddress;
+
+            modal.querySelector("p[data-field='phone']").textContent = escapeHTML(customer.phone || "");
+            modal.querySelector("p[data-field='email']").textContent = escapeHTML(customer.email || "");
+            modal.querySelector("p[data-field='seller']").textContent = escapeHTML(customer.seller || "");
+            modal.querySelector("p[data-field='buyer']").textContent = escapeHTML(customer.buyer || "");
+            modal.querySelector("span[data-field='salesType']").textContent = escapeHTML(customer.salesType || "").toUpperCase();
+            modal.querySelector("p[data-field='purchaseModel']").textContent = escapeHTML(customer.purchaseModel || "");
+            modal.querySelector("p[data-field='monthlyTicket']").textContent = customer.monthlyTicket ? `R$ ${customer.monthlyTicket.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : "";
+            modal.querySelector("p[data-field='notes']").textContent = escapeHTML(customer.notes || "");
+        } catch (err) {
+            console.error(err);
+            alert("Erro ao carregar informações do cliente");
+        }
+        document.getElementById("viewCustomer").classList.remove("hidden");
+    }
+
+    function closeViewCustomerModal() {
+        document.getElementById("viewCustomer").classList.add("hidden");
+    }
+
+    function escapeHTML(str) {
+        if (!str) return "";
+        return str
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function filterCards(container, term) {
+
+        const query = term.toLowerCase();
+
+        container.querySelectorAll(".kanban-card").forEach(card => {
+
+            const name = card.dataset.name.toLowerCase();
+            const city = card.dataset.city.toLowerCase();
+            const seller = card.dataset.seller.toLowerCase();
+
+            const match =
+                name.includes(query) ||
+                city.includes(query) ||
+                seller.includes(query);
+
+            card.style.display = match ? "" : "none";
+        });
+    }
+
+    function filterCustomers(container, term) {
+
+        const query = term.toLowerCase();
+
+        container.querySelectorAll(".kanban-card").forEach(card => {
+
+            const name = card.dataset.name.toLowerCase();
+            const city = card.dataset.city.toLowerCase();
+            const seller = card.dataset.seller.toLowerCase();
+
+            const match =
+                name.includes(query) ||
+                city.includes(query) ||
+                seller.includes(query);
+
+            card.style.display = match ? "" : "none";
+        });
+    }
+
+    const inputFilterCustomer = document.getElementById("customer-search");
+    const buttonFilterCustomer = document.getElementById("confirm-customer-search");
+
+    function filterCustomers() {
+        const searchValue = inputFilterCustomer.value.toLowerCase().trim();
+        const customers = document.querySelectorAll("[data-customer-name]");
+
+        customers.forEach(customer => {
+            const name = customer.dataset.customerName.toLowerCase();
+
+            if (name.includes(searchValue)) {
+                customer.style.display = "flex";
+            } else {
+                customer.style.display = "none";
+            }
+        });
+    }
+
+    buttonFilterCustomer.addEventListener("click", filterCustomers);
+</script>
+
+
+</html>

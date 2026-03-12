@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>CRM GUSTAVO</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries"></script>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block"
+        rel="stylesheet" />
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#243B6B",
+                        "background-light": "#F5F7FB",
+                        "background-dark": "#0F172A",
+                        "card-light": "#FFFFFF",
+                        "card-dark": "#1E293B",
+                    },
+                    fontFamily: {
+                        display: ["Inter", "sans-serif"],
+                        sans: ["Inter", "sans-serif"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "8px",
+                    },
+                },
+            },
+        };
+    </script>
+    <style type="text/tailwindcss">
+        body { font-family: 'Inter', sans-serif; }
+        /* Sidebar ativa em desktop */
+        .sidebar-width {
+            width: 16rem;
+            transition: transform 0.3s;
+        }
+
+        /* Itens ativos */
+        .sidebar-item-active {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-left: 4px solid #3B82F6;
+        }
+
+        /* Ajustes para telas menores */
+        @media (max-width: 1024px) {
+            .sidebar-text { display: none; }
+            .sidebar-width { width: 4.5rem; }
+            .sidebar-logo { display: none; }
+            .sidebar-logo-icon { display: block !important; }
+            .sidebar-item { justify-content: center; padding-left: 0; padding-right: 0; }
+            .sidebar-item span:last-child { display: none; }
+            .sidebar-item span:first-child { margin-right: 0; }
+        }
+
+        /* Mobile: sidebar escondida inicialmente */
+        #sidebar {
+            transform: translateX(-100%);
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            z-index: 40;
+        }
+
+        #sidebar.open {
+            transform: translateX(0);
+        }
+        .modal-overlay {
+            background-color: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(2px);
+            display: flex;
+        }
+    </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex">
+    <aside id="sidebar"
+        class="sidebar-width w-64 bg-primary text-white flex-shrink-0 flex flex-col transition-all duration-300">
+        <div class="p-6 flex justify-center lg:justify-start">
+            <h1 class="sidebar-logo text-xl font-bold tracking-tight text-white/90">Ativação Tec</h1>
+            <span class="sidebar-logo-icon hidden material-symbols-outlined text-2xl">leaderboard</span>
+        </div>
+        <nav class="flex-1 mt-4">
+            <a href="/funil"
+                class="sidebar-item flex items-center px-6 py-3.5 hover:bg-white/5 transition-colors group">
+                <span class="material-symbols-outlined lg:mr-3 text-slate-400 group-hover:text-white">dashboard</span>
+                <span class="sidebar-text font-medium">Funil de Vendas</span>
+            </a>
+            <a class="sidebar-item flex items-center px-6 py-3.5 sidebar-item-active group">
+                <span class="material-symbols-outlined lg:mr-3 text-white">group</span>
+                <span class="sidebar-text font-medium">CRM GUSTAVO</span>
+            </a>
+        </nav>
+    </aside>
+    <main class="flex-1 flex flex-col h-screen overflow-hidden">
+        <header
+            class="min-h-16 h-auto lg:h-16 bg-card-light dark:bg-card-dark border-b border-slate-200 dark:border-slate-800 flex flex-col lg:flex-row items-center justify-between px-4 lg:px-8 py-3 lg:py-0 z-10 flex-shrink-0 gap-4">
+            <div class="flex items-center justify-between w-full gap-4">
+                <div class="flex items-center gap-3">
+                    <h2 class="text-lg lg:text-xl font-bold text-slate-800 dark:text-white">CRM GUSTAVO</h2>
+                    <span id="countCustomers"
+                        class="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase"></span>
+                </div>
+                <button id="menu-toggle" class="p-1 text-slate-500">
+                    <span class="material-symbols-outlined">menu</span>
+                </button>
+            </div>
+            <div class="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
+                <div class="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
+                    <div class="relative w-full sm:w-64 lg:w-72">
+                        <span
+                            class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+                        <input id="customer-search"
+                            class="w-full pl-9 pr-4 py-1.5 bg-slate-100 dark:bg-slate-800 border-none rounded-lg focus:ring-2 focus:ring-primary text-sm pr-16"
+                            placeholder="Buscar clientes..." type="text" />
+                        <button id="confirm-customer-search"
+                            class="absolute right-1 top-1/2 -translate-y-1/2 bg-primary text-white px-3 py-1 rounded-md text-[11px] font-semibold hover:bg-opacity-90 transition-all shadow-sm">
+                            Buscar
+                        </button>
+                    </div>
+                    <button onclick="openCreateCustomerModal()"
+                        class="w-full sm:w-auto bg-primary hover:bg-opacity-90 text-white px-4 py-1.5 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition-all shadow-sm">
+                        <span class="material-symbols-outlined text-lg">add</span>
+                        <span class="whitespace-nowrap">Novo Cliente</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+        <div class="flex-1 overflow-y-auto px-4 lg:px-8 py-6">
+            <div class="space-y-3 w-full max-w-none" id="customersContainer"></div>
+        </div>
+        <div
+            class="bg-card-light dark:bg-card-dark border-t border-slate-200 dark:border-slate-800 py-3 px-4 lg:px-8 flex-shrink-0 flex flex-col md:flex-row items-center justify-between gap-4">
+            <p class="text-xs text-slate-500 dark:text-slate-400 order-2 md:order-1">
+                Mostrando <span class="font-semibold text-slate-700 dark:text-slate-200">1</span> a <span
+                    class="font-semibold text-slate-700 dark:text-slate-200"></span> de <span
+                    class="font-semibold text-slate-700 dark:text-slate-200"></span>
+            </p>
+            <div class="flex items-center gap-1 order-1 md:order-2">
+                <button
+                    class="flex items-center px-2 lg:px-3 py-1.5 text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-primary transition-colors disabled:opacity-40"
+                    disabled="">
+                    <span class="material-symbols-outlined text-lg mr-1">chevron_left</span>
+                    <span class="hidden sm:inline">Anterior</span>
+                </button>
+                <div class="flex items-center gap-1 mx-1 lg:mx-2">
+                    <button class="w-8 h-8 rounded-md bg-primary text-white text-xs font-bold shadow-sm">1</button>
+                </div>
+                <button
+                    class="flex items-center px-2 lg:px-3 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-primary transition-colors disabled:opacity-40">
+                    <span class="hidden sm:inline">Próximo</span>
+                    <span class="material-symbols-outlined text-lg ml-1">chevron_right</span>
+                </button>
+            </div>
+            <div class="hidden md:block w-24 order-3"></div>
+        </div>
+    </main>
+    <div id="customerModal" class="fixed inset-0 z-[60] items-center hidden justify-center p-4">
+        <div class="bg-white dark:bg-card-dark w-full max-w-4xl rounded-xl shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="px-8 py-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                <h2 id="customerModalTitle" class="text-xl font-bold text-slate-800 dark:text-white">Cadastrar Cliente
+                </h2>
+                <button onclick="closeCustomerModal()"
+                    class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <div class="px-8 py-6 overflow-y-auto">
+                <form class="space-y-8" id="registerForm">
+                    <div class="space-y-4">
+                        <h3
+                            class="text-sm font-bold text-primary dark:text-blue-400 uppercase tracking-wider flex items-center gap-2">
+                            <span class="material-symbols-outlined text-lg">info</span>
+                            Informações Básicas
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                            <div class="space-y-1.5">
+                                <label
+                                    class="text-xs font-semibold text-slate-600 dark:text-slate-400 ml-0.5">Nome</label>
+                                <input name="name" required
+                                    class="w-full text-sm bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                    placeholder="Nome completo do responsável" type="text" />
+                            </div>
+                            <div class="space-y-1.5">
+                                <label
+                                    class="text-xs font-semibold text-slate-600 dark:text-slate-400 ml-0.5">Marca</label>
+                                <input name="brand" required
+                                    class="w-full text-sm bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                    placeholder="Nome da empresa/marca" type="text" />
+                            </div>
+                            <div class="space-y-1.5">
+                                <label
+                                    class="text-xs font-semibold text-slate-600 dark:text-slate-400 ml-0.5">Matriz</label>
+                                <input name="matrix" required
+                                    class="w-full text-sm bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                    placeholder="Grupo ou Matriz" type="text" />
+                            </div>
+                            <div class="space-y-1.5">
+                                <label
+                                    class="text-xs font-semibold text-slate-600 dark:text-slate-400 ml-0.5">Telefone</label>
+                                <input id="phone" name="phone"
+                                    class="w-full text-sm bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                    placeholder="(00) 00000-0000" type="tel" />
+                            </div>
+                            <div class="space-y-1.5">
+                                <label
+                                    class="text-xs font-semibold text-slate-600 dark:text-slate-400 ml-0.5">E-mail</label>
+                                <input name="email"
+                                    class="w-full text-sm bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                    placeholder="email@exemplo.com" type="email" />
+                            </div>
+                            <div class="md:col-span-2 grid grid-cols-12 gap-x-4 gap-y-4 pt-2">
+                                <div class="col-span-12 md:col-span-3 space-y-1.5">
+                                    <label
+                                        class="text-xs font-semibold text-slate-600 dark:text-slate-400 ml-0.5">CEP</label>
+                                    <input id="postalCode" name="postalCode"
+                                        class="w-full text-sm bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                        placeholder="00000-000" type="text" />
+                                </div>
+                                <div class="col-span-12 md:col-span-6 space-y-1.5">
+                                    <label
+                                        class="text-xs font-semibold text-slate-600 dark:text-slate-400 ml-0.5">Rua</label>
+                                    <input id="street" name="street"
+                                        class="w-full text-sm bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                        placeholder="Logradouro..." type="text" />
+                                </div>
+                                <div class="col-span-12 md:col-span-3 space-y-1.5">
+                                    <label
+                                        class="text-xs font-semibold text-slate-600 dark:text-slate-400 ml-0.5">Número</label>
+                                    <input id="street_number" name="street_number"
+                                        class="w-full text-sm bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                        placeholder="Nº" type="text" />
+                                </div>
+                                <div class="col-span-12 md:col-span-5 space-y-1.5">
+                                    <label
+                                        class="text-xs font-semibold text-slate-600 dark:text-slate-400 ml-0.5">Bairro</label>
+                                    <input id="neighborhood" name="neighborhood"
+                                        class="w-full text-sm bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                        placeholder="Bairro" type="text" />
+                                </div>
+                                <div class="col-span-12 md:col-span-5 space-y-1.5">
+                                    <label
+                                        class="text-xs font-semibold text-slate-600 dark:text-slate-400 ml-0.5">Cidade</label>
+                                    <input id="city" name="city" required
+                                        class="w-full text-sm bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                        placeholder="Cidade" type="text" />
+                                </div>
+                                <div class="col-span-12 md:col-span-2 space-y-1.5">
+                                    <label
+                                        class="text-xs font-semibold text-slate-600 dark:text-slate-400 ml-0.5">UF</label>
+                                    <input id="state" name="state" required
+                                        class="w-full text-sm bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all uppercase"
+                                        maxlength="2" placeholder="UF" type="text" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <h3
+                            class="text-sm font-bold text-primary dark:text-blue-400 uppercase tracking-wider flex items-center gap-2">
+                            <span class="material-symbols-outlined text-lg">paid</span>
+                            Informações Comerciais
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                            <div class="space-y-1.5">
+                                <label
+                                    class="text-xs font-semibold text-slate-600 dark:text-slate-400 ml-0.5">Vendedor</label>
+                                <input name="seller"
+                                    class="w-full text-sm bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                    placeholder="Vendedor responsável" type="text" />
+                            </div>
+                            <div class="space-y-1.5">
+                                <label
+                                    class="text-xs font-semibold text-slate-600 dark:text-slate-400 ml-0.5">Comprador</label>
+                                <input name="buyer"
+                                    class="w-full text-sm bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                    placeholder="Comprador responsável" type="text" />
+                            </div>
+                            <div class="space-y-1.5">
+                                <label
+                                    class="text-xs font-semibold text-slate-600 dark:text-slate-400 ml-0.5">Tipo</label>
+                                <div
+                                    class="flex bg-slate-50 dark:bg-slate-800/50 p-1 rounded-lg border border-slate-200 dark:border-slate-700">
+
+                                    <label class="flex-1 cursor-pointer">
+                                        <input type="radio" name="salesType" value="online" class="peer hidden" checked>
+
+                                        <div class="text-center py-1 text-xs font-bold rounded-md 
+                                            peer-checked:bg-white peer-checked:dark:bg-primary 
+                                            peer-checked:shadow-sm peer-checked:text-primary 
+                                            peer-checked:dark:text-white
+                                            text-slate-500 dark:text-slate-400 transition-all">
+                                            Online
+                                        </div>
+                                    </label>
+
+
+                                    <label class="flex-1 cursor-pointer">
+                                        <input type="radio" name="salesType" value="varejo" class="peer hidden">
+
+                                        <div class="text-center py-1 text-xs font-bold rounded-md 
+                                            peer-checked:bg-white peer-checked:dark:bg-primary 
+                                            peer-checked:shadow-sm peer-checked:text-primary 
+                                            peer-checked:dark:text-white
+                                            text-slate-500 dark:text-slate-400 transition-all">
+                                            Varejo
+                                        </div>
+                                    </label>
+
+                                </div>
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-xs font-semibold text-slate-600 dark:text-slate-400 ml-0.5">Modelo de
+                                    Compra</label>
+                                <input name="purchaseModel"
+                                    class="w-full text-sm bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                    placeholder="Ex: Antecipado, Faturado" type="text" />
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-xs font-semibold text-slate-600 dark:text-slate-400 ml-0.5">Ticket
+                                    Médio
+                                    Mensal</label>
+                                <div class="relative">
+                                    <span
+                                        class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold">R$</span>
+                                    <input id="monthlyTicket" name="monthlyTicket"
+                                        class="w-full pl-9 text-sm bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                        placeholder="0,00" type="text" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="space-y-1.5 pb-2">
+                        <label
+                            class="text-xs font-semibold text-slate-600 dark:text-slate-400 ml-0.5">Observação</label>
+                        <textarea name="notes"
+                            class="w-full text-sm bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all resize-none"
+                            placeholder="Detalhes adicionais sobre o cliente, perfil ou necessidades específicas..."
+                            rows="4"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div
+                class="px-8 py-5 bg-slate-50 dark:bg-slate-800/30 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-3 rounded-b-xl">
+                <button onclick="closeCustomerModal()"
+                    class="px-5 py-2 text-sm font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors">
+                    Cancelar
+                </button>
+                <button id="saveCustomerBtn" type="submit"
+                    class="bg-primary hover:bg-slate-800 text-white px-6 py-2 rounded-lg text-sm font-bold shadow-lg shadow-primary/20 transition-all flex items-center gap-2">
+                    <span class="material-symbols-outlined text-lg">check</span>
+                    Salvar Cliente
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="deleteCustomerModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"></div>
+        <div
+            class="relative bg-white dark:bg-card-dark w-full max-w-md rounded-xl shadow-2xl overflow-hidden transform transition-all border border-slate-100 dark:border-slate-800">
+            <div class="p-6">
+                <div class="flex flex-col items-center text-center">
+                    <div
+                        class="w-16 h-16 bg-red-50 dark:bg-red-900/20 rounded-full flex items-center justify-center mb-4">
+                        <span class="material-symbols-outlined text-red-500 text-4xl">warning</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Confirmar Exclusão</h3>
+                    <p id="modalDeleteMessage" class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                        Tem certeza que deseja excluir este cliente? Esta ação não poderá ser desfeita e removerá todos
+                        os dados associados.
+                    </p>
+                </div>
+            </div>
+            <div class="bg-slate-50 dark:bg-slate-800/50 px-6 py-4 flex items-center justify-center gap-3">
+                <button onclick="closeDeleteCustomerModal()"
+                    class="flex-1 px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                    Cancelar
+                </button>
+                <button onclick="confirmDeleteCustomer()"
+                    class="flex-1 px-4 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition-colors shadow-sm shadow-red-200 dark:shadow-none">
+                    Sim, Excluir
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="viewCustomer"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm hidden">
+        <div
+            class="relative w-full max-w-2xl bg-white dark:bg-slate-800 rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-700">
+                <div class="flex items-center gap-3">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100">Visualizar Cliente</h2>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Informações detalhadas do registro no CRM
+                        </p>
+                    </div>
+                </div>
+                <button onclick="closeViewCustomerModal()"
+                    class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                    <div class="flex flex-col gap-1">
+                        <span
+                            class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Nome</span>
+                        <p class="text-sm font-medium text-slate-800 dark:text-slate-200" data-field="name"></p>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <span
+                            class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Marca</span>
+                        <p class="text-sm font-medium text-slate-800 dark:text-slate-200" data-field="brand"></p>
+                    </div>
+                    <div class="col-span-full flex flex-col gap-1">
+                        <span
+                            class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Endereço
+                            Completo</span>
+                        <p class="text-sm font-medium text-slate-800 dark:text-slate-200" data-field="address"></p>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <span
+                            class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Telefone</span>
+                        <p class="text-sm font-medium text-slate-800" data-field="phone"></p>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <span
+                            class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Email</span>
+                        <p class="text-sm font-medium text-slate-800" data-field="email"></p>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <span
+                            class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Vendedor
+                            Responsável</span>
+                        <div class="flex items-center gap-2">
+                            <div
+                                class="size-6 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
+                                <span
+                                    class="material-symbols-outlined text-xs text-slate-600 dark:text-slate-300">person</span>
+                            </div>
+                            <p class="text-sm font-medium text-slate-800 dark:text-slate-200" data-field="seller"></p>
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <span
+                            class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Comprador
+                            Responsável</span>
+                        <div class="flex items-center gap-2">
+                            <div
+                                class="size-6 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
+                                <span
+                                    class="material-symbols-outlined text-xs text-slate-600 dark:text-slate-300">person</span>
+                            </div>
+                            <p class="text-sm font-medium text-slate-800 dark:text-slate-200" data-field="buyer"></p>
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <span
+                            class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Tipo
+                            de Conta</span>
+                        <div class="flex">
+                            <span
+                                class="px-2 py-0.5 rounded text-[11px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
+                                data-field="salesType"></span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <span
+                            class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Modelo
+                            de Compra</span>
+                        <p class="text-sm font-medium text-slate-800 dark:text-slate-200" data-field="purchaseModel">
+                        </p>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <span
+                            class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Ticket
+                            Médio</span>
+                        <p class="text-sm font-bold text-slate-900 dark:text-slate-100" data-field="monthlyTicket"></p>
+                    </div>
+                    <div class="col-span-full pt-4 border-t border-slate-100 dark:border-slate-700 mt-2">
+                        <span
+                            class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Observações</span>
+                        <div
+                            class="mt-2 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-100 dark:border-slate-700">
+                            <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed italic"
+                                data-field="notes"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div
+                class="px-6 py-4 bg-slate-50 dark:bg-slate-900/30 border-t border-slate-100 dark:border-slate-700 flex justify-end gap-3">
+                <button onclick="closeViewCustomerModal()"
+                    class="px-6 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-semibold text-[#243B6B] dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all shadow-sm">
+                    Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+    const menuToggle = document.getElementById("menu-toggle");
+    const sidebar = document.getElementById("sidebar");
+
+    menuToggle.addEventListener('click', () => {
+        sidebar.classList.toggle('open');
+    });
+
+    let currentPage = 1;
+    const limit = 10;
+    const maxVisibleButtons = 2
+
+    const confirmSearchInput = document.getElementById("confirm-customer-search");
+
+    confirmSearchInput.addEventListener("click", () => {
+        loadCustomers(1);
+    });
+
+    const allButtons = document.querySelectorAll("button");
+    const prevBtn = Array.from(allButtons).find(btn => btn.textContent.includes("Anterior"));
+    const nextBtn = Array.from(allButtons).find(btn => btn.textContent.includes("Próximo"));
+    const pagesContainer = document.querySelector(".flex.items-center.gap-1.mx-1.lg\\:mx-2");
+
+    prevBtn.addEventListener("click", () => {
+        if (currentPage > 1) loadCustomers(currentPage - 1);
+    });
+
+    nextBtn.addEventListener("click", () => {
+        const totalPages = Math.ceil(totalCustomers / limit);
+        if (currentPage < totalPages) loadCustomers(currentPage + 1);
+    });
+
+    function addEllipsis() {
+        const span = document.createElement("span");
+        span.textContent = "...";
+        span.className = "w-8 h-8 flex items-center justify-center text-slate-400";
+        pagesContainer.appendChild(span);
+    }
+    function addPageButton(i) {
+        const btn = document.createElement("button");
+        btn.className = `w-8 h-8 rounded-md text-xs font-medium transition-colors ${i === currentPage
+            ? "bg-primary text-white font-bold shadow-sm"
+            : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400"
+            }`;
+        btn.textContent = i;
+        btn.addEventListener("click", () => loadCustomers(i));
+        pagesContainer.appendChild(btn);
+    }
+
+    function escapeHTML(str) {
+        if (!str) return "";
+        return str
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    async function loadCustomers(page = 1) {
+        currentPage = page;
+
+        const container = document.getElementById("customersContainer");
+        container.innerHTML = "";
+
+        const name = document.getElementById("customer-search").value.trim();
+
+        try {
+            const params = new URLSearchParams({ page, limit });
+            if (name) params.append("name", name);
+
+            const response = await fetch(`/customers?${params.toString()}`);
+            if (!response.ok) throw new Error("Erro ao buscar clientes");
+
+            const customers = await response.json();
+
+            totalCustomers = customers["total"]
+            document.getElementById("countCustomers").textContent = totalCustomers == 1 ? "1 CLIENTE" : `${totalCustomers} CLIENTES`;
+
+            customers["customers"].forEach(customer => {
+                const card = document.createElement("div");
+                card.className = "bg-card-light dark:bg-card-dark p-4 rounded-lg shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col lg:flex-row lg:items-center justify-between hover:border-slate-300 dark:hover:border-slate-600 transition-all group gap-4";
+                card.dataset.customerId = customer._id;
+
+                const leftDiv = document.createElement("div");
+                leftDiv.className = "flex items-start lg:items-center gap-4 lg:gap-6 flex-1";
+
+                const iconDiv = document.createElement("div");
+                iconDiv.className = "w-12 h-12 bg-slate-50 dark:bg-slate-800 rounded-lg flex items-center justify-center border border-slate-100 dark:border-slate-700 flex-shrink-0";
+                const icon = document.createElement("span");
+                icon.className = "material-symbols-outlined text-slate-500 text-2xl";
+                icon.textContent = "storefront";
+                iconDiv.appendChild(icon);
+
+                const gridDiv = document.createElement("div");
+                gridDiv.className = "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 flex-1 gap-4 lg:gap-6 items-center";
+
+                const companyDiv = document.createElement("div");
+                companyDiv.className = "min-w-0";
+
+                const labelEmpresa = document.createElement("span");
+                labelEmpresa.className = "block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5";
+                labelEmpresa.textContent = "Empresa";
+
+                const h3 = document.createElement("h3");
+                h3.className = "text-sm font-bold text-slate-800 dark:text-white truncate";
+                h3.textContent = customer.name;
+                h3.dataset.companyName = customer.name;
+
+                const pCity = document.createElement("p");
+                pCity.className = "text-[10px] text-slate-500 dark:text-slate-400 uppercase font-medium";
+                const city = customer.address?.city || "";
+                const state = customer.address?.state || "";
+                pCity.textContent = `${escapeHTML(city)} / ${escapeHTML(state)}`;
+
+                companyDiv.append(labelEmpresa, h3, pCity);
+
+                // Vendedor Responsável
+                const respDiv = document.createElement("div");
+                const labelResp = document.createElement("span");
+                labelResp.className = "block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5";
+                labelResp.textContent = "Responsável";
+                const pResp = document.createElement("p");
+                pResp.className = "text-xs font-medium text-slate-700 dark:text-slate-300";
+                pResp.textContent = escapeHTML(customer.seller || "");
+
+                respDiv.append(labelResp, pResp);
+
+                // Telefone
+                const telDiv = document.createElement("div");
+                const labelTel = document.createElement("span");
+                labelTel.className = "block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5";
+                labelTel.textContent = "Telefone";
+                const pTel = document.createElement("p");
+                pTel.className = "text-xs font-medium text-slate-700 dark:text-slate-300";
+                pTel.textContent = escapeHTML(customer.phone || "");
+                telDiv.append(labelTel, pTel);
+
+                // E-Mail
+                const emailDiv = document.createElement("div");
+                emailDiv.className = "hidden sm:block";
+                const labelEmail = document.createElement("span");
+                labelEmail.className = "block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5";
+                labelEmail.textContent = "E-mail";
+                const pEmail = document.createElement("p");
+                pEmail.className = "text-xs font-medium text-slate-700 dark:text-slate-300 truncate";
+                pEmail.textContent = customer.email || "";
+                emailDiv.append(labelEmail, pEmail);
+
+                gridDiv.append(companyDiv, respDiv, telDiv, emailDiv);
+                leftDiv.append(iconDiv, gridDiv);
+
+                const btnDiv = document.createElement("div");
+                btnDiv.className = "flex items-center justify-end gap-2 border-t lg:border-none pt-3 lg:pt-0 border-slate-100 dark:border-slate-800";
+
+                const btnView = document.createElement("button");
+                btnView.className = "flex items-center gap-1.5 px-2 lg:px-3 py-1.5 text-[11px] font-semibold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-md hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-primary transition-colors";
+                btnView.onclick = () => openViewCustomerModal(customer._id);
+                btnView.innerHTML = `<span class="material-symbols-outlined text-[16px]">visibility</span><span class="hidden sm:inline">Visualizar</span>`;
+
+                const btnEdit = document.createElement("button");
+                btnEdit.className = "flex items-center gap-1.5 px-2 lg:px-3 py-1.5 text-[11px] font-semibold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-md hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-primary transition-colors";
+                btnEdit.onclick = () => openEditClientModal(customer._id);
+                btnEdit.innerHTML = `<span class="material-symbols-outlined text-[16px]">edit</span><span class="hidden sm:inline">Editar</span>`;
+
+                const btnDelete = document.createElement("button");
+                btnDelete.className = "flex items-center gap-1.5 px-2 lg:px-3 py-1.5 text-[11px] font-semibold text-red-600 border border-transparent hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors";
+                btnDelete.onclick = () => openDeleteCustomerModal(customer._id, event);
+                btnDelete.innerHTML = `<span class="material-symbols-outlined text-[16px]">delete</span><span class="hidden sm:inline">Excluir</span>`;
+
+                btnDiv.append(btnView, btnEdit, btnDelete);
+
+                card.append(leftDiv, btnDiv);
+                container.appendChild(card);
+            });
+
+        } catch (err) {
+            console.error(err);
+            container.innerHTML = "<p class='text-red-600'>Erro ao carregar clientes</p>";
+        }
+
+        const start = (currentPage - 1) * limit + 1;
+        const end = Math.min(currentPage * limit, totalCustomers);
+        const counter = document.querySelector("p.text-xs span.font-semibold:nth-child(1)");
+        const counterEnd = document.querySelector("p.text-xs span.font-semibold:nth-child(2)");
+        const counterTotal = document.querySelector("p.text-xs span.font-semibold:nth-child(3)");
+        counter.textContent = start;
+        counterEnd.textContent = end;
+        counterTotal.textContent = totalCustomers;
+
+        const pagesContainer = document.querySelector(".flex.items-center.gap-1.mx-1.lg\\:mx-2");
+        pagesContainer.innerHTML = ""; // limpa páginas antigas
+        const totalPages = Math.ceil(totalCustomers / limit);
+
+        let startPage = Math.max(1, currentPage - Math.floor(maxVisibleButtons / 2));
+        let endPage = Math.min(totalPages, startPage + maxVisibleButtons - 1);
+
+        startPage = Math.max(1, endPage - maxVisibleButtons + 1);
+        if (startPage > 1) {
+            addPageButton(1);
+            if (startPage > 2) {
+                addEllipsis();
+            }
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            addPageButton(i);
+        }
+
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) {
+                addEllipsis();
+            }
+            addPageButton(totalPages);
+        }
+
+        if (prevBtn) prevBtn.disabled = currentPage === 1;
+        if (nextBtn) nextBtn.disabled = (currentPage * limit) >= totalCustomers;
+    }
+
+    loadCustomers();
+    let editingClientId = null;
+    let deletingCustomerId = null;
+
+    async function openViewCustomerModal(customerId) {
+        const modal = document.getElementById("viewCustomer");
+
+        try {
+            const response = await fetch(`/customers/${customerId}`);
+            if (!response.ok) throw new Error("Erro ao buscar cliente");
+
+            const customer = await response.json();
+
+            modal.querySelector("p[data-field='name']").textContent = customer.name || "";
+            modal.querySelector("p[data-field='brand']").textContent = customer.brand || "";
+
+            const address = customer.address || {};
+            const fullAddress = address.city ? `${escapeHTML(address.street)}, ${escapeHTML(address.streetNumber)} - ${escapeHTML(address.neighborhood)}, ${escapeHTML(address.city)} - ${escapeHTML(address.state)}, ${escapeHTML(address.postalCode)}` : "-";
+            modal.querySelector("p[data-field='address']").textContent = fullAddress;
+
+            modal.querySelector("p[data-field='phone']").textContent = escapeHTML(customer.phone || "");
+            modal.querySelector("p[data-field='email']").textContent = customer.email || "";
+            modal.querySelector("p[data-field='seller']").textContent = escapeHTML(customer.seller || "");
+            modal.querySelector("p[data-field='buyer']").textContent = customer.buyer || "";
+            modal.querySelector("span[data-field='salesType']").textContent = escapeHTML(customer.salesType || "").toUpperCase();
+            modal.querySelector("p[data-field='purchaseModel']").textContent = escapeHTML(customer.purchaseModel || "");
+            modal.querySelector("p[data-field='monthlyTicket']").textContent = customer.monthlyTicket ? `R$ ${customer.monthlyTicket.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : "";
+            modal.querySelector("p[data-field='notes']").textContent = customer.notes || "";
+        } catch (err) {
+            console.error(err);
+            alert("Erro ao carregar informações do cliente");
+        }
+        document.getElementById("viewCustomer").classList.remove("hidden");
+    }
+
+    function closeViewCustomerModal() {
+        document.getElementById("viewCustomer").classList.add("hidden");
+    }
+
+    function closeCustomerModal() {
+        document.getElementById("customerModal").classList.add("hidden");
+        document.getElementById("customerModal").classList.remove("modal-overlay");
+    }
+
+    function openCreateCustomerModal() {
+        console.log("Testando")
+
+        document.getElementById("customerModalTitle").textContent = "Cadastrar Cliente";
+        document.getElementById("saveCustomerBtn").textContent = "Salvar Cliente";
+
+        document.getElementById("registerForm").reset();
+
+        document.getElementById("customerModal").classList.add("modal-overlay");
+    }
+
+    async function openEditClientModal(customerId) {
+        editingClientId = customerId;
+
+        document.getElementById("customerModalTitle").textContent = "Editar Cliente";
+        document.getElementById("saveCustomerBtn").textContent = "Salvar Alterações";
+
+        document.getElementById("customerModal").classList.add("modal-overlay");
+
+        try {
+
+            const response = await fetch(`/customers/${customerId}`);
+
+            if (!response.ok) {
+                throw new Error("Erro ao buscar cliente");
+            }
+
+            const customer = await response.json();
+
+            // Campos simples
+            document.querySelector('[name="name"]').value = customer.name || "";
+            document.querySelector('[name="brand"]').value = customer.brand || "";
+            document.querySelector('[name="matrix"]').value = customer.matrix || "";
+            document.querySelector('[name="phone"]').value = customer.phone || "";
+            document.querySelector('[name="email"]').value = customer.email || "";
+            document.querySelector('[name="seller"]').value = customer.seller || "";
+            document.querySelector('[name="buyer"]').value = customer.buyer || "";
+            document.querySelector('[name="salesType"]').value = customer.salesType || "";
+            document.querySelector('[name="purchaseModel"]').value = customer.purchaseModel || "";
+            document.querySelector('[name="notes"]').value = customer.notes || "";
+
+            // Ticket médio
+            if (customer.monthlyTicket) {
+                document.querySelector('[name="monthlyTicket"]').value =
+                    Number(customer.monthlyTicket).toLocaleString("pt-BR", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    });
+            }
+
+            // Endereço
+            if (customer.address) {
+                document.querySelector('[name="postalCode"]').value = customer.address.postalCode || "";
+                document.querySelector('[name="street"]').value = customer.address.street || "";
+                document.querySelector('[name="street_number"]').value = customer.address.streetNumber || "";
+                document.querySelector('[name="neighborhood"]').value = customer.address.neighborhood || "";
+                document.querySelector('[name="city"]').value = customer.address.city || "";
+                document.querySelector('[name="state"]').value = customer.address.state || "";
+            }
+
+            document.getElementById("customerModal").classList.remove("hidden");
+            document.getElementById("customerModal").classList.add("modal-overlay");
+
+        } catch (error) {
+
+            console.error(error);
+            alert("Erro ao carregar os dados do cliente");
+
+        }
+    }
+
+    function openDeleteCustomerModal(customerId, event) {
+        const button = event.currentTarget;
+        const customerCard = button.closest("[data-customer-id]");
+        const companyName = customerCard.querySelector("[data-company-name]").textContent;
+
+        deletingCustomerId = customerId;
+
+        const modalMessage = document.getElementById("modalDeleteMessage");
+        modalMessage.textContent = "Tem certeza que deseja excluir o cliente ";
+
+        const span = document.createElement("span");
+        span.className = "font-bold text-slate-900";
+        span.textContent = companyName;
+
+        modalMessage.appendChild(span);
+        modalMessage.appendChild(document.createTextNode("? Esta ação não poderá ser desfeita e removerá todos os dados associados."));
+
+        const modal = document.getElementById("deleteCustomerModal");
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+    }
+
+    function closeDeleteCustomerModal() {
+        const modal = document.getElementById("deleteCustomerModal");
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+
+        deletingCustomerId = null;
+    }
+
+    async function confirmDeleteCustomer() {
+
+        if (!deletingCustomerId) return;
+
+        try {
+            const response = await fetch(`/customers/${deletingCustomerId}`, {
+                method: "DELETE"
+            });
+
+            if (!response.ok) {
+                throw new Error("Erro ao excluir cliente");
+            }
+
+            closeDeleteCustomerModal();
+            loadCustomers();
+
+        } catch (error) {
+
+            console.error(error);
+            alert("Erro ao excluir cliente");
+
+        }
+    }
+
+    document.getElementById("saveCustomerBtn").addEventListener("click", function () {
+        document.getElementById("registerForm").requestSubmit();
+    });
+
+    document.getElementById("registerForm").addEventListener("submit", function (e) {
+
+        e.preventDefault();
+
+        const formData = new FormData(this);
+
+        const data = Object.fromEntries(formData);
+
+        if (editingClientId) {
+            updateCustomer(editingClientId, data);
+        } else {
+            createCustomer(data);
+        }
+
+    });
+
+    function prepareCustomerData(data) {
+        return {
+            ...data,
+            monthlyTicket: data.monthlyTicket
+                ? Number(data.monthlyTicket.toString().replace(/\./g, "").replace(",", "."))
+                : 0,
+            address: {
+                postalCode: data.postalCode,
+                street: data.street,
+                streetNumber: data.street_number,
+                neighborhood: data.neighborhood,
+                city: data.city,
+                state: data.state,
+            },
+            postalCode: undefined,
+            street: undefined,
+            street_number: undefined,
+            neighborhood: undefined,
+            city: undefined,
+            state: undefined,
+        };
+    }
+
+    async function createCustomer(data) {
+        try {
+            const formattedData = prepareCustomerData(data);
+            const response = await fetch("/customers", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(formattedData),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error("Erro ao criar cliente:", errorData);
+                alert("Erro ao criar cliente: " + (errorData.error || "Verifique o console"));
+                return;
+            }
+
+            const createdClient = await response.json();
+            closeCustomerModal();
+            document.getElementById("registerForm").reset();
+
+            loadCustomers();
+        } catch (err) {
+            console.error("Erro na requisição:", err);
+            alert("Erro ao criar cliente, veja o console para detalhes");
+        }
+    }
+
+    async function updateCustomer(customerId, data) {
+        try {
+            const formattedData = prepareCustomerData(data);
+            const response = await fetch(`/customers/${customerId}`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(formattedData),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error("Erro ao editar cliente:", errorData);
+                alert("Erro ao editar cliente: " + (errorData.error || "Verifique o console"));
+                return;
+            }
+
+            closeCustomerModal();
+            document.getElementById("registerForm").reset();
+
+            loadCustomers();
+        } catch (err) {
+            console.error("Erro na requisição:", err);
+            alert("Erro ao editar cliente, veja o console para detalhes");
+        }
+    }
+
+    const postalCodeInput = document.getElementById("postalCode")
+
+    postalCodeInput.addEventListener("blur", searchPostalCode)
+
+    function searchPostalCode() {
+
+        let postalCode = postalCodeInput.value.replace(/\D/g, '')
+
+        if (postalCode.length !== 8) {
+            return
+        }
+
+        fetch(`https://viacep.com.br/ws/${postalCode}/json/`)
+            .then(res => res.json())
+            .then(data => {
+
+                if (data.erro) {
+                    alert("CEP não encontrado")
+                    return
+                }
+
+                document.getElementById("street").value = data.logradouro
+                document.getElementById("neighborhood").value = data.bairro
+                document.getElementById("city").value = data.localidade
+                document.getElementById("state").value = data.uf
+
+            })
+
+            .catch(() => {
+                alert("Erro ao buscar CEP")
+            })
+    }
+
+    postalCodeInput.addEventListener("input", formatPostalCode)
+
+    function formatPostalCode(e) {
+
+        let value = e.target.value.replace(/\D/g, "")
+
+        if (value.length > 8) {
+            value = value.slice(0, 8)
+        }
+
+        if (value.length > 5) {
+            value = value.replace(/(\d{5})(\d{0,3})/, "$1-$2")
+        }
+
+        e.target.value = value
+    }
+
+    const phoneInput = document.getElementById("phone")
+
+    phoneInput.addEventListener("input", formatPhone)
+
+    function formatPhone(e) {
+
+        let value = e.target.value.replace(/\D/g, "")
+
+        if (value.length > 11) {
+            value = value.slice(0, 11)
+        }
+
+        if (value.length > 6) {
+            value = value.replace(/(\d{2})(\d{5})(\d{0,4})/, "($1) $2-$3")
+        }
+        else if (value.length > 2) {
+            value = value.replace(/(\d{2})(\d{0,5})/, "($1) $2")
+        }
+        else {
+            value = value.replace(/(\d*)/, "($1")
+        }
+
+        e.target.value = value
+    }
+
+    const moneyInput = document.getElementById("monthlyTicket")
+
+    moneyInput.addEventListener("input", formatCurrency)
+
+    function formatCurrency(e) {
+
+        let value = e.target.value.replace(/\D/g, "")
+
+        value = (Number(value) / 100).toFixed(2) + ""
+
+        value = value.replace(".", ",")
+
+        value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+
+        e.target.value = value
+    }
+</script>
+
+
+</html>
